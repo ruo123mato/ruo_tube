@@ -57,6 +57,40 @@
         </div>
     </div>
 
+    <!-- ビデオプレイヤーモーダル -->
+    <div id="videoPlayerModal" class="modal">
+        <div class="video-player-modal-content">
+            <span class="close-video">&times;</span>
+            <div class="player-container">
+                <video id="videoPlayer" class="video-element">
+                    <source src="" type="video/mp4">
+                </video>
+                <div class="video-controls">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                            <div class="progress-handle"></div>
+                        </div>
+                    </div>
+                    <div class="controls-bottom">
+                        <button id="playPauseBtn" class="control-btn">▶</button>
+                        <div class="time-display">
+                            <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                        </div>
+                        <div class="keyboard-hints">
+                            <span class="hint-text">A: -5秒 | S: 一時停止 | D: +5秒</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="video-info-section">
+                <h3 id="videoTitle"></h3>
+                <p id="videoChannel"></p>
+                <p id="videoDescription"></p>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
