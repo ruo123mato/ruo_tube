@@ -1,0 +1,12 @@
+{
+  "name": "ruo_tube",
+  "version": "1.0.0",
+  "description": "YouTube-like video sharing site",
+  "main": "app.js",
+  "scripts": {
+    "start": "python -m http.server 8000"
+  },
+  "keywords": ["video", "streaming", "educational"],
+  "author": "ruo123mato",
+  "license": "MIT"
+}
