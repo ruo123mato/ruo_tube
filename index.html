@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RuoTube - ビデオ共有サイト</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">RuoTube</div>
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="動画を検索">
+                <button id="searchBtn" class="search-btn">検索</button>
+            </div>
+            <div class="user-menu">
+                <button class="menu-btn">≡</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="sidebar">
+            <nav class="nav-menu">
+                <button class="nav-item active" data-view="home">
+                    🏠 ホーム
+                </button>
+                <button class="nav-item" data-view="subscriptions">
+                    📺 登録中
+                </button>
+            </nav>
+            <div class="subscriptions-section">
+                <h3>登録中のチャンネル</h3>
+                <div id="subscribedChannels" class="channels-list"></div>
+            </div>
+        </div>
+
+        <section class="content-area">
+            <div id="homeView" class="view active">
+                <h2 id="sectionTitle">おすすめ</h2>
+                <div id="videoGrid" class="video-grid"></div>
+            </div>
+
+            <div id="subscriptionsView" class="view">
+                <h2>登録中のチャンネル</h2>
+                <div id="subscriptionVideos" class="video-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- チャンネル詳細モーダル -->
+    <div id="channelModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="channelDetail" class="channel-detail"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
