@@ -326,6 +326,9 @@ function formatTime(seconds) {
 function performSearch() {
     const query = searchInput.value.trim().toLowerCase();
     
+    // ホームビューを表示
+    switchView('home');
+    
     if (query === '') {
         allVideos = [...videosData];
         sectionTitle.textContent = 'おすすめ';
@@ -349,7 +352,6 @@ function switchView(view) {
     
     if (view === 'home') {
         homeView.classList.add('active');
-        searchInput.value = '';
         allVideos = [...videosData];
         sectionTitle.textContent = 'おすすめ';
         renderVideos(allVideos, videoGrid);
