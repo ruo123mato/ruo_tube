@@ -9,13 +9,15 @@
 <body>
     <header class="header">
         <div class="header-content">
-            <div class="logo">RuoTube</div>
+            <div class="header-top">
+                <div class="logo">RuoTube</div>
+                <div class="user-menu">
+                    <button class="menu-btn">≡</button>
+                </div>
+            </div>
             <div class="search-container">
                 <input type="text" id="searchInput" class="search-input" placeholder="動画を検索">
-                <button id="searchBtn" class="search-btn">検索</button>
-            </div>
-            <div class="user-menu">
-                <button class="menu-btn">≡</button>
+                <button id="searchBtn" class="search-btn">🔍</button>
             </div>
         </div>
     </header>
@@ -28,9 +30,6 @@
                 </button>
                 <button class="nav-item" data-view="subscriptions">
                     📺 登録中
-                </button>
-                <button id="searchNavItem" class="nav-item" data-view="search" style="display: none;">
-                    🔍 検索結果
                 </button>
             </nav>
             <div class="subscriptions-section">
