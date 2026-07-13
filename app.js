@@ -164,13 +164,17 @@ const searchInput = document.getElementById('searchInput');
 const searchBtn = document.getElementById('searchBtn');
 const videoGrid = document.getElementById('videoGrid');
 const subscriptionVideos = document.getElementById('subscriptionVideos');
+const searchResults = document.getElementById('searchResults');
 const homeView = document.getElementById('homeView');
 const subscriptionsView = document.getElementById('subscriptionsView');
+const searchView = document.getElementById('searchView');
+const searchNavItem = document.getElementById('searchNavItem');
 const navItems = document.querySelectorAll('.nav-item');
 const subscribedChannelsContainer = document.getElementById('subscribedChannels');
 const channelModal = document.getElementById('channelModal');
 const closeModal = document.querySelector('.close');
 const sectionTitle = document.getElementById('sectionTitle');
+const searchTitle = document.getElementById('searchTitle');
 const videoPlayerModal = document.getElementById('videoPlayerModal');
 const closeVideoBtn = document.querySelector('.close-video');
 const videoPlayer = document.getElementById('videoPlayer');
@@ -187,6 +191,8 @@ function init() {
     renderVideos(allVideos, videoGrid);
     setupEventListeners();
     updateSubscribedChannels();
+    // 初期状態で検索ビューは非表示
+    searchNavItem.style.display = 'none';
 }
 
 // イベントリスナー設定
@@ -322,25 +328,34 @@ function formatTime(seconds) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-// 検索実行
+// 検索実行 - 改善版
 function performSearch() {
     const query = searchInput.value.trim().toLowerCase();
     
-    // ホームビューを表示
-    switchView('home');
-    
     if (query === '') {
-        allVideos = [...videosData];
-        sectionTitle.textContent = 'おすすめ';
-    } else {
-        allVideos = videosData.filter(video => 
-            video.title.toLowerCase().includes(query) ||
-            video.channel.toLowerCase().includes(query)
-        );
-        sectionTitle.textContent = `「${searchInput.value}」の検索結果`;
+        alert('検索キーワードを入力してください');
+        return;
     }
     
-    renderVideos(allVideos, videoGrid);
+    // フィルタリング処理
+    const searchedVideos = videosData.filter(video => 
+        video.title.toLowerCase().includes(query) ||
+        video.channel.toLowerCase().includes(query)
+    );
+    
+    // 検索結果を表示
+    searchTitle.textContent = `「${searchInput.value}」の検索結果 (${searchedVideos.length}件)`;
+    renderVideos(searchedVideos, searchResults);
+    
+    // 検索ビューに切り替え
+    switchView('search');
+    
+    // サイドバーの検索ナビアイテムを表示して選択状態にする
+    searchNavItem.style.display = 'block';
+    navItems.forEach(nav => nav.classList.remove('active'));
+    searchNavItem.classList.add('active');
+    
+    console.log(`検索: "${query}" で ${searchedVideos.length}件の動画が見つかりました`);
 }
 
 // ビューの切り替え
@@ -349,6 +364,7 @@ function switchView(view) {
     
     homeView.classList.remove('active');
     subscriptionsView.classList.remove('active');
+    searchView.classList.remove('active');
     
     if (view === 'home') {
         homeView.classList.add('active');
@@ -361,6 +377,9 @@ function switchView(view) {
             subscribedChannels.some(ch => ch.id === video.channelId)
         );
         renderVideos(subscriptionVideosList, subscriptionVideos);
+    } else if (view === 'search') {
+        searchView.classList.add('active');
+        // 検索結果は既にrenderVideosで表示されているので何もしない
     }
 }
 
@@ -395,6 +414,8 @@ function renderVideos(videos, container) {
 
 // 関連動画を表示
 function displayRelatedVideos(currentVideo) {
+    if (!relatedVideosList) return;
+    
     relatedVideosList.innerHTML = '';
     
     // 関連動画を取得（同じカテゴリの動画）
