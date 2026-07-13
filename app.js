@@ -328,7 +328,7 @@ function formatTime(seconds) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-// 検索実行 - 改善版
+// 検索実行 - 新しいタブで検索結果を表示
 function performSearch() {
     const query = searchInput.value.trim().toLowerCase();
     
@@ -343,17 +343,18 @@ function performSearch() {
         video.channel.toLowerCase().includes(query)
     );
     
-    // 検索結果を表示
-    searchTitle.textContent = `「${searchInput.value}」の検索結果 (${searchedVideos.length}件)`;
-    renderVideos(searchedVideos, searchResults);
+    // 検索結果をJSONとしてエンコード
+    const searchData = {
+        query: searchInput.value,
+        videos: searchedVideos
+    };
     
-    // 検索ビューに切り替え
-    switchView('search');
+    // URLパラメータとして検索データを渡す
+    const encodedData = encodeURIComponent(JSON.stringify(searchData));
+    const searchUrl = `search-results.html?data=${encodedData}`;
     
-    // サイドバーの検索ナビアイテムを表示して選択状態にする
-    searchNavItem.style.display = 'block';
-    navItems.forEach(nav => nav.classList.remove('active'));
-    searchNavItem.classList.add('active');
+    // 新しいタブで開く
+    window.open(searchUrl, '_blank');
     
     console.log(`検索: "${query}" で ${searchedVideos.length}件の動画が見つかりました`);
 }
