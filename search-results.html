@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RuoTube - 検索結果</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .search-results-container {
+            padding: 20px;
+        }
+        .search-results-header {
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .search-results-header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #030303;
+        }
+        .results-count {
+            font-size: 14px;
+            color: #606060;
+            margin-top: 5px;
+        }
+        .back-button {
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #030303;
+            transition: background-color 0.3s;
+        }
+        .back-button:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">RuoTube</div>
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="動画を検索">
+                <button id="searchBtn" class="search-btn">検索</button>
+            </div>
+            <div class="user-menu">
+                <button class="menu-btn">≡</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="sidebar">
+            <nav class="nav-menu">
+                <button class="nav-item active" data-view="home" onclick="window.history.back()">
+                    ← 戻る
+                </button>
+            </nav>
+        </div>
+
+        <section class="content-area">
+            <div class="search-results-container">
+                <div class="search-results-header">
+                    <h1 id="searchTitle">検索結果</h1>
+                    <div class="results-count" id="resultsCount"></div>
+                </div>
+                <div id="searchResults" class="video-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ビデオプレイヤーモーダル -->
+    <div id="videoPlayerModal" class="modal">
+        <div class="video-player-modal-content">
+            <span class="close-video">&times;</span>
+            <div class="player-container">
+                <video id="videoPlayer" class="video-element">
+                    <source src="" type="video/mp4">
+                </video>
+                <div class="video-controls">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                            <div class="progress-handle"></div>
+                        </div>
+                    </div>
+                    <div class="controls-bottom">
+                        <button id="playPauseBtn" class="control-btn">▶</button>
+                        <div class="time-display">
+                            <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                        </div>
+                        <div class="keyboard-hints">
+                            <span class="hint-text">A: -5秒 | S: 一時停止 | D: +5秒</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="video-info-section">
+                <h3 id="videoTitle"></h3>
+                <p id="videoChannel"></p>
+                <p id="videoDescription"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // URLパラメータから検索データを取得
+        function getSearchData() {
+            const params = new URLSearchParams(window.location.search);
+            const data = params.get('data');
+            
+            if (data) {
+                try {
+                    return JSON.parse(decodeURIComponent(data));
+                } catch (e) {
+                    console.error('検索データのパースに失敗しました:', e);
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        // DOMエレメント
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const searchResults = document.getElementById('searchResults');
+        const searchTitle = document.getElementById('searchTitle');
+        const resultsCount = document.getElementById('resultsCount');
+        const videoPlayerModal = document.getElementById('videoPlayerModal');
+        const closeVideoBtn = document.querySelector('.close-video');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressFill = document.querySelector('.progress-fill');
+        const progressHandle = document.querySelector('.progress-handle');
+        const currentTimeDisplay = document.getElementById('currentTime');
+        const durationDisplay = document.getElementById('duration');
+
+        let currentPlayingVideo = null;
+
+        // 初期化
+        function init() {
+            const searchData = getSearchData();
+            
+            if (searchData) {
+                displaySearchResults(searchData);
+                // 検索入力欄に検索キーワードを設定
+                searchInput.value = searchData.query;
+            } else {
+                searchResults.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #606060;">検索データが見つかりません</div>';
+            }
+            
+            setupEventListeners();
+        }
+
+        // 検索結果を表示
+        function displaySearchResults(searchData) {
+            const videos = searchData.videos || [];
+            const query = searchData.query || '';
+            
+            searchTitle.textContent = `「${query}」の検���結果`;
+            resultsCount.textContent = `${videos.length}件の動画が見つかりました`;
+            
+            renderVideos(videos, searchResults);
+        }
+
+        // ビデオレンダリング
+        function renderVideos(videos, container) {
+            container.innerHTML = '';
+            
+            if (videos.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #606060;">動画が見つかりません</div>';
+                return;
+            }
+            
+            videos.forEach(video => {
+                const videoCard = document.createElement('div');
+                videoCard.className = 'video-card';
+                videoCard.innerHTML = `
+                    <div class="video-thumbnail" style="background-image: url('${video.thumbnail}'); background-size: cover; background-position: center;"></div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-channel">${video.channel}</div>
+                        <div class="video-stats">${video.views} • ${video.uploadedDate}</div>
+                    </div>
+                `;
+                
+                videoCard.addEventListener('click', () => {
+                    playVideo(video);
+                });
+                
+                container.appendChild(videoCard);
+            });
+        }
+
+        // 動画を再生
+        function playVideo(video) {
+            currentPlayingVideo = video;
+            videoPlayer.src = '';
+            
+            document.getElementById('videoTitle').textContent = video.title;
+            document.getElementById('videoChannel').textContent = video.channel;
+            document.getElementById('videoDescription').textContent = `再生回数: ${video.views} • アップロード日: ${video.uploadedDate}`;
+            
+            videoPlayerModal.classList.add('active');
+        }
+
+        // 再生/一時停止の切り替え
+        function togglePlayPause() {
+            if (videoPlayer.paused) {
+                videoPlayer.play();
+            } else {
+                videoPlayer.pause();
+            }
+        }
+
+        // プログレスの更新
+        function updateProgress() {
+            const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+            progressFill.style.width = percent + '%';
+            progressHandle.style.left = percent + '%';
+            currentTimeDisplay.textContent = formatTime(videoPlayer.currentTime);
+        }
+
+        // 期間の更新
+        function updateDuration() {
+            durationDisplay.textContent = formatTime(videoPlayer.duration);
+        }
+
+        // 時間フォーマット
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // キーボード操作
+        function handleKeyboardControls(e) {
+            if (videoPlayerModal.classList.contains('active')) {
+                switch (e.key.toLowerCase()) {
+                    case 'a':
+                        e.preventDefault();
+                        videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - 5);
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        videoPlayer.currentTime = Math.min(videoPlayer.duration, videoPlayer.currentTime + 5);
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        togglePlayPause();
+                        break;
+                }
+            }
+        }
+
+        // イベントリスナー設定
+        function setupEventListeners() {
+            // 新しいタブで検索
+            searchBtn.addEventListener('click', () => {
+                const query = searchInput.value.trim();
+                if (query) {
+                    // メインページにリダイレクト（親ウィンドウで処理）
+                    if (window.opener) {
+                        window.opener.searchInput.value = query;
+                        window.opener.performSearch();
+                    }
+                }
+            });
+
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    searchBtn.click();
+                }
+            });
+
+            closeVideoBtn.addEventListener('click', () => {
+                videoPlayerModal.classList.remove('active');
+                videoPlayer.pause();
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === videoPlayerModal) {
+                    videoPlayerModal.classList.remove('active');
+                    videoPlayer.pause();
+                }
+            });
+
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            videoPlayer.addEventListener('play', () => {
+                playPauseBtn.textContent = '⏸';
+            });
+            videoPlayer.addEventListener('pause', () => {
+                playPauseBtn.textContent = '▶';
+            });
+
+            videoPlayer.addEventListener('timeupdate', updateProgress);
+            videoPlayer.addEventListener('loadedmetadata', updateDuration);
+
+            progressBar.addEventListener('click', (e) => {
+                const rect = progressBar.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                videoPlayer.currentTime = percent * videoPlayer.duration;
+            });
+
+            progressHandle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                let isDragging = true;
+
+                const onMouseMove = (e) => {
+                    if (!isDragging) return;
+                    const rect = progressBar.getBoundingClientRect();
+                    const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                    videoPlayer.currentTime = percent * videoPlayer.duration;
+                };
+
+                const onMouseUp = () => {
+                    isDragging = false;
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                };
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            document.addEventListener('keydown', handleKeyboardControls);
+        }
+
+        // ページ読み込み時に初期化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
