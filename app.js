@@ -165,10 +165,10 @@ const searchBtn = document.getElementById('searchBtn');
 const videoGrid = document.getElementById('videoGrid');
 const subscriptionVideos = document.getElementById('subscriptionVideos');
 const searchResults = document.getElementById('searchResults');
+const sampleVideos = document.getElementById('sampleVideos');
 const homeView = document.getElementById('homeView');
 const subscriptionsView = document.getElementById('subscriptionsView');
 const searchView = document.getElementById('searchView');
-const searchNavItem = document.getElementById('searchNavItem');
 const navItems = document.querySelectorAll('.nav-item');
 const subscribedChannelsContainer = document.getElementById('subscribedChannels');
 const channelModal = document.getElementById('channelModal');
@@ -189,10 +189,16 @@ const relatedVideosList = document.getElementById('relatedVideosList');
 // 初期化
 function init() {
     renderVideos(allVideos, videoGrid);
+    displaySampleVideos();
     setupEventListeners();
     updateSubscribedChannels();
-    // 初期状態で検索ビューは非表示
-    searchNavItem.style.display = 'none';
+}
+
+// 最新の5つのサンプル動画を表示
+function displaySampleVideos() {
+    // 最後の5つの動画（最新順）を取得
+    const latestVideos = [...videosData].reverse().slice(0, 5).reverse();
+    renderVideos(latestVideos, sampleVideos);
 }
 
 // イベントリスナー設定
@@ -378,9 +384,6 @@ function switchView(view) {
             subscribedChannels.some(ch => ch.id === video.channelId)
         );
         renderVideos(subscriptionVideosList, subscriptionVideos);
-    } else if (view === 'search') {
-        searchView.classList.add('active');
-        // 検索結果は既にrenderVideosで表示されているので何もしない
     }
 }
 
