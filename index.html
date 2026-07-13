@@ -29,6 +29,9 @@
                 <button class="nav-item" data-view="subscriptions">
                     📺 登録中
                 </button>
+                <button id="searchNavItem" class="nav-item" data-view="search" style="display: none;">
+                    🔍 検索結果
+                </button>
             </nav>
             <div class="subscriptions-section">
                 <h3>登録中のチャンネル</h3>
@@ -45,6 +48,11 @@
             <div id="subscriptionsView" class="view">
                 <h2>登録中のチャンネル</h2>
                 <div id="subscriptionVideos" class="video-grid"></div>
+            </div>
+
+            <div id="searchView" class="view">
+                <h2 id="searchTitle">検索結果</h2>
+                <div id="searchResults" class="video-grid"></div>
             </div>
         </section>
     </main>
